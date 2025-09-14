@@ -1,0 +1,68 @@
+sanjeeb=read.csv("https://raw.githubusercontent.com/bijayprad/DA-Sanjeeb-Banglore/refs/heads/main/qualitybanglore.csv")
+install.packages("dplyr")
+install.packages("janitor")
+library(dplyr)
+library(janitor)
+# Recode categorical variables into meaningful labels
+sanjeeb <- sanjeeb %>%
+  mutate(
+    Gen = recode(Gen, `1` = "Male", `2` = "Female"),
+    Res = recode(Res, `1` = "Urban", `2` = "Semi-Urban/ Rural"),
+    Edu = recode(Edu, 
+                 `1` = "Below Secondary", 
+                 `2` = "Secondary/High School", 
+                 `3` = "Bachelors Degree", 
+                 `4` = "Masters Degree"),
+    Occ = recode(Occ,
+                 `1` = "Students",
+                 `2` = "Employed Private Sectors",
+                 `3` = "Employed Public Sectors",
+                 `4` = "Unemployed/ Retired",
+                 `5` = "Others"),
+    Freq = recode(Freq,
+                  `1` = "Daily",
+                  `2` = "Weekly",
+                  `3` = "Monthly",
+                  `4` = "Rarely",
+                  `5` = "Never"),
+    # Age binning
+    AgeGroup = case_when(
+      Age < 30 ~ "< 30",
+      Age >= 30 & Age <= 45 ~ "30 - 45",
+      Age > 45 & Age <= 60 ~ "45 - 60",
+      Age > 60 ~ "60+",
+      TRUE ~ NA_character_
+    )
+  )
+# Function for summary table with group name
+make_summary <- function(data, var, group_name){
+  data %>%
+    tabyl({{var}}) %>%
+    mutate(Percentage = round(percent*100, 2)) %>%
+    select(Category = {{var}}, 
+           `Number of Respondent` = n, 
+           Percentage) %>%
+    mutate(`Percentage of Respondent` = paste0(Percentage, "%"),
+           Group = group_name) %>%
+    select(Group, Category, `Number of Respondent`, `Percentage of Respondent`)
+}
+# Create all tables
+gender_tab <- make_summary(sanjeeb, Gen, "Gender of Respondent")
+res_tab    <- make_summary(sanjeeb, Res, "Residential Status")
+edu_tab    <- make_summary(sanjeeb, Edu, "Educational Status")
+occ_tab    <- make_summary(sanjeeb, Occ, "Occupational Status")
+age_tab    <- make_summary(sanjeeb, AgeGroup, "Age of Respondent (Binned)")
+freq_tab   <- make_summary(sanjeeb, Freq, "Digital Banking Usage Frequency Status")
+# Combine all into one dataframe
+final_table <- bind_rows(gender_tab, res_tab, edu_tab, occ_tab, age_tab, freq_tab)
+# Create TOTAL row with the exact same column structure
+total_row <- tibble(
+  Group = "Total",
+  Category = "Total",
+  `Number of Respondent` = nrow(sanjeeb),
+  `Percentage of Respondent` = "100.00%"
+)
+# Append Total row correctly
+final_table <- bind_rows(final_table, total_row)
+# View result
+final_table
