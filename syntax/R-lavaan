@@ -1,0 +1,21 @@
+install.packages("lavaan")
+library(lavaan)
+# 1. Define the model
+model <- '
+# Measurement model
+Digital_Transformation =~ DT1 + DT2 + DT3 + DT4 + DT5
+Tangibles =~ TA1 + TA2 + TA3 + TA4 
+Reliability =~ RL1 + RL2 + RL3 + RL4
+Responsiveness =~ RES1 + RES2 + RES3 + RES4
+Assurance =~ ASS1 + ASS2 + ASS3 + ASS4
+Empathy =~ EM1 + EM2 + EM3 + EM4
+Satisfaction =~ SAT1 + SAT2 + SAT3 + SAT4
+# Higher-order factor
+Quality =~ Tangibles+Reliability+Responsiveness+Assurance+Empathy
+# Structural model
+Quality ~ Digital_Transformation
+Satisfaction ~ Quality'
+# 2. Fit the model
+fit <- sem(model, data = sanjeeb, meanstructure = TRUE)
+# 3. Show summary with fit indices and standardized estimates
+summary(fit, fit.measures = TRUE, standardized = TRUE)
