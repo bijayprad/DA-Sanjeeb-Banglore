@@ -1,0 +1,23 @@
+install.packages("psych")
+install.packages("REdaS")
+library(psych)
+library(REdaS)
+names(sanjeeb) <- c("Age","Gender","Residence","Education","Occupation","Frequency",
+               paste0("DT",1:6),
+               paste0("TA",1:4),
+               paste0("RL",1:4),
+               paste0("RES",1:4),
+               paste0("ASS",1:4),
+               paste0("EM",1:4),
+               paste0("SAT",1:4))
+items <- sanjeeb[, c(paste0("DT",1:6),
+                paste0("TA",1:4),
+                paste0("RL",1:4),
+                paste0("RES",1:4),
+                paste0("ASS",1:4),
+                paste0("EM",1:4),
+                paste0("SAT",1:4))]
+KMO(items)
+cortest.bartlett(cor(items), n = nrow(items))
+cor.mat <- cor(items, use = "pairwise.complete.obs")
+round(cor.mat, 2)
